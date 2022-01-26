@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mq-client
+  labels:
+    app: mq-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mq-client
+  template:
+    metadata:
+      labels:
+        app: mq-client
+    spec:
+      containers:
+      - name: mq-client
+        image: image-registry.openshift-image-registry.svc:5000/{REPLACE_WITH_NAMESPACE}/mqclient:v1.0
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: 400m
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        command:
+          - sh
+          - -c
+          - sleep infinity
+        volumeMounts:
+        - name: cert1
+          mountPath: /app/cert1
+        - name: cert1-no-ca
+          mountPath: /app/cert1-no-ca
+      volumes:
+      - name: cert1
+        configMap:
+          name: mq-jks-cm
+      - name: cert1-no-ca
+        configMap:
+          name: mq-jks-cm-no-ca
