@@ -1,7 +1,10 @@
 Sample app for binding REST API to MQ
 =====================================
-
 https://community.ibm.com/community/user/integration/viewdocument/app-connect-openshift-operator-depl-1?CommunityKey=ab1f8001-8ec9-4c40-84cb-396723d816a1&tab=librarydocuments
+
+MQ Mutual Auth
+==============
+https://zhimin-wen.medium.com/mutual-tls-authentication-and-authorization-for-ibm-mq-7108d5c6e281
 
 Sample MQ Policy XML
 ====================
