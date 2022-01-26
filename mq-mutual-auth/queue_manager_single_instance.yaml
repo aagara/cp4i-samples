@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-init-mqsc
+data:
+  init.mqsc: |-
+    define channel(channel1) chltype(SVRCONN) trptype(TCP) sslcauth(REQUIRED) sslciph('ANY_TLS12_OR_HIGHER')
+    set chlauth(channel1) type(sslpeermap) sslpeer('CN=mqclient1') usersrc(map) mcauser('mqclient1') action(add)
+    set authrec principal('mqclient1') objtype(qmgr) authadd(all)
+    set authrec profile('*') principal('mqclient1') objtype(queue) authadd(all)
+    
+    define qlocal('testq1') replace
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-qm-ini-ext-user
+data:
+  qm.ini: |-
+    Service:
+      Name=AuthorizationService
+      EntryPoints=14
+      SecurityPolicy=UserExternal
+---
+apiVersion: mq.ibm.com/v1beta1
+kind: QueueManager
+metadata:
+  name: mq-exp
+spec:
+  license:
+    accept: true
+    license: L-RJON-C7QG3S
+    use: NonProduction
+  queueManager:
+    name: qm1
+    resources:
+      limits:
+        cpu: 500m
+      requests:
+        cpu: 500m
+    availability:
+      type: SingleInstance
+    mqsc:
+      - configMap:
+          name: cm-init-mqsc
+          items:
+            - init.mqsc
+    ini:
+      - configMap:
+          name: cm-qm-ini-ext-user
+          items:
+            - qm.ini
+  template:
+    pod:
+      containers:
+        - name: qmgr
+  version: 9.2.4.0-r1
+  web:
+    enabled: false
+  pki:
+    keys:
+      - name: qm
+        secret:
+          secretName: qm1-tls-secret
+          items:
+          - tls.key
+          - tls.crt
+    trust:
+      - name: ca
+        secret:
+          secretName: ca-crt-secret
+          items:
+            - ca.crt
