@@ -8,7 +8,7 @@ Create SSH Key pair for Private Git Repository.
 (OpenShift secret for Private key and Public key to GitHub account)
 
 Link Service Account pipeline with ibm-entitlement-key
-(oc secrets link pipeline <secret-name>)
+(oc secrets link pipeline replace_with_secret_name)
   
 Register ACE Specific Task
 (https://github.com/ace-hello-world/pipeline-guide)
