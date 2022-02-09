@@ -1,0 +1,125 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: REPLACE_WITH_INT_SERVER_NAME
+spec:
+  workspaces:
+    - name: shared-workspace
+    - name: ssh-creds
+  params:
+    - name: SOURCE_GITHUB_REPO_URL
+    - name: SOURCE_GITHUB_REPO_REVISION
+      default: master
+    - name: INFRA_GITHUB_REPO_URL
+    - name: INFRA_GITHUB_REPO_REVISION
+      default: master
+    - name: SOURCE_SUB_DIRECTORY
+      default: source
+    - name: INFRA_SUB_DIRECTORY
+      default: infra
+    - name: dockerfile-relative-path-to-infra
+      default: Dockerfile
+  tasks:
+    - name: clone-source
+      taskRef:
+        name: git-clone
+        kind: ClusterTask 
+      params: 
+      - name: url 
+        value: "$(params.SOURCE_GITHUB_REPO_URL)"
+      - name: revision 
+        value: "$(params.SOURCE_GITHUB_REPO_REVISION)"
+      - name: subdirectory 
+        value: "$(params.SOURCE_SUB_DIRECTORY)"
+      - name: deleteExisting 
+        value: "true" 
+      workspaces: 
+      - name: output 
+        workspace: shared-workspace
+      - name: ssh-directory 
+        workspace: ssh-creds
+    - name: clone-infra
+      taskRef: 
+        name: git-clone
+        kind: ClusterTask 
+      params:
+      - name: url 
+        value: "$(params.INFRA_GITHUB_REPO_URL)"
+      - name: revision 
+        value: "$(params.INFRA_GITHUB_REPO_REVISION)"
+      - name: deleteExisting 
+        value: "true"
+      - name: subdirectory
+        value: "$(params.INFRA_SUB_DIRECTORY)"
+      workspaces: 
+      - name: output 
+        workspace: shared-workspace 
+      - name: ssh-directory 
+        workspace: ssh-creds
+    - name: resolve-props
+      taskRef:
+        name: resolve-props
+        kind: Task 
+      runAfter:
+        - "clone-infra"
+      params: 
+      - name: is-source-directory
+        value: "$(params.SOURCE_SUB_DIRECTORY)"
+      workspaces:
+      - name: input
+        workspace: shared-workspace
+    - name: generate-bar
+      taskRef:
+        name: generate-bar 
+        kind: Task 
+      params:
+      - name: is-source-directory 
+        value: "$(params.SOURCE_SUB_DIRECTORY)"
+      - name: is-application-names 
+        value: $(tasks.resolve-props.results.is-application-names)
+      - name: bar-location
+        value: $(workspaces.workspace.path)/bars
+      - name: bar-filename 
+        value: $(tasks.resolve-props.results.release-name).bar
+      workspaces: 
+        - name: workspace 
+          workspace: shared-workspace 
+      runAfter:
+        - "resolve-props"
+    - name: build-is-image 
+      taskRef: 
+        name: buildah 
+        kind: ClusterTask
+      params:
+        - name: IMAGE 
+          value: $(tasks.resolve-props.results.registry-host)/$(context.pipelineRun.namespace)/$(tasks.resolve-props.results.release-name):$(tasks.clone-source.results.commit)
+        - name: DOCKERFILE 
+          value: $(workspaces.source.path)/$(params.INFRA_SUB_DIRECTORY)/$(params.dockerfile-relative-path-to-infra)
+        - name: CONTEXT 
+          value: $(workspaces.source.path)/bars 
+      runAfter:
+        - "generate-bar"
+        - "clone-infra"
+      workspaces: 
+        - name: source 
+          workspace: shared-workspace
+    - name: deploy-is 
+      taskRef:
+        name: deploy-is 
+        kind: Task
+      params:
+        - name: is-infra-directory 
+          value: "$(params.INFRA_SUB_DIRECTORY)"
+        - name: registry-host 
+          value: $(tasks.resolve-props.results.registry-host)
+        - name: IMAGE
+          value: $(tasks.resolve-props.results.registry-host)/$(context.pipelineRun.namespace)/$(tasks.resolve-props.results.release-name):$(tasks.clone-source.results.commit)
+        - name: release-name
+          value: $(tasks.resolve-props.results.release-name)
+        - name: configurations 
+          value: ""
+      runAfter:
+        - "build-is-image"
+      workspaces: 
+        - name: input
+          workspace: shared-workspace
