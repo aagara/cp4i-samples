@@ -1,0 +1,8 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: REPLACE_WITH_EVENT_LISTENER_NAME
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - triggerRef: REPLACE_WITH_TRIGGER_NAME
