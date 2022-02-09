@@ -1,0 +1,31 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: REPLACE_WITH_TRIGGER_TEMPLATE_NAME
+spec:
+  params:
+  - name: SOURCE_GITHUB_REPO_URL
+    description: The repository url to build and deploy.
+  - name: INFRA_GITHUB_REPO_URL
+    description: The integration server infrastructure repo.
+  resourcetemplates:
+  - apiVersion: tekton.dev/v1beta1
+    kind: PipelineRun
+    metadata:
+      generateName: REPLACE_WITH_NAME-
+    spec:
+      serviceAccountName: pipeline
+      pipelineRef:
+        name: REPLACE_WITH_PIPELINE_REF_NAME
+      params:
+      - name: SOURCE_GITHUB_REPO_URL
+        value: $(tt.params.SOURCE_GITHUB_REPO_URL)
+      - name: INFRA_GITHUB_REPO_URL
+        value: $(tt.params.INFRA_GITHUB_REPO_URL)
+      workspaces:
+      - name: shared-workspace 
+        persistentVolumeClaim: 
+          claimName: REPLACE_WITH_CLAIM_NAME
+      - name: ssh-creds
+        secret:
+          secretName: REPLACE_WITH_GITHUB_SECRET
