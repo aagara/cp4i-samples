@@ -1,0 +1,10 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: REPLACE_WITH_TRIGGER_BINDING_NAME
+spec:
+  params:
+  - name: SOURCE_GITHUB_REPO_URL
+    value: REPLACE_WITH_YOUR_SOURCE_REPO
+  - name: INFRA_GITHUB_REPO_URL
+    value: REPLACE_WITH_YOUR_INFRA_REPO
