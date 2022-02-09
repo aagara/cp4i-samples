@@ -1,0 +1,20 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: REPLACE_WITH_TRIGGER_NAME
+spec:
+  serviceAccountName: pipeline
+  interceptors:
+    - ref:
+        name: "github"
+      params:
+        - name: "secretRef"
+          value:
+            secretName: REPLACE_WITH_SECRET_NAME
+            secretKey: REPLACE_WITH_SECRET_KEY_NAME
+        - name: "eventTypes"
+          value: ["push"]
+  bindings:
+    - ref: REPLACE_WITH_TRIGGER_BINDING_NAME
+  template:
+    ref: REPLACE_WITH_TRIGGER_TEMPLATE_NAME
