@@ -46,10 +46,12 @@ App Connect Integration Server Reference
 ========================================
 https://www.ibm.com/docs/en/app-connect/containers_cd?topic=resources-integration-server-reference#crvalues
 
-How to copy files to/from a Sitecore container
+How to copy files to/from a container
 ==============================================
-To copy a file from the local file system to a container: kubectl cp <src-path> <your-pod-name>:<dest-path>
-To copy a file from the container to the local file system: kubectl cp <your-pod-name>:<src-path> <local-dest-path> 
+To copy a file from the local file system to a container: 
+kubectl cp [src-path] [your-pod-name]:[dest-path]
+To copy a file from the container to the local file system:
+kubectl cp [your-pod-name]:[src-path] [local-dest-path]
 
 IBM MQ Troubleshooting Common TLS SSL Errors
 =============================================
